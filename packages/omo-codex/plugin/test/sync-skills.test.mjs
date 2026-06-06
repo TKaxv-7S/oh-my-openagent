@@ -8,6 +8,7 @@ import { sharedSkillsRootPath } from "@oh-my-opencode/shared-skills";
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = join(root, "..", "..", "..");
 const CONTEXT_PRESSURE_SKILL_BUDGET_BYTES = 25_000;
+const opencodeOnlyToolPattern = /\b(?:call_omo_agent|background_output|team_[a-z_]+|task)\s*\(/;
 
 const expectedSkills = [
 	"comment-checker",
@@ -290,7 +291,10 @@ test("#given packaged ulw-plan skill #when inspected #then dynamic multi-agent p
 	// when / then
 	assertPackagedContentMatches(combinedFile, [
 		["self-orchestrates 5 host subagents for planning", /(?:self-orchestrates|orchestrates)[\s\S]*5[\s\S]*host subagents/i],
+		["defers deep workflow to its reference", /references\/full-workflow\.md/],
 		["requires dynamic workflow phases", /dynamic[\s\S]*workflow[\s\S]*phase|phase[\s\S]*dynamic[\s\S]*workflow/i],
+		["explores before plan generation", /explore/i],
+		["waits for explicit user approval", /wait for[^.]{0,80}explicit[^.]{0,40}(?:okay|approval)/i],
 		["keeps verification distinct from execution", /verification[\s\S]*execution|execution[\s\S]*verification/i],
 		["requires dirty-worktree-aware planning", /dirty worktree/i],
 		["requires stale-state checks between source and packaged payloads", /stale state/i],
@@ -298,6 +302,8 @@ test("#given packaged ulw-plan skill #when inspected #then dynamic multi-agent p
 		["does not accept subagent outputs as success without independent verification", /subagent outputs?[\s\S]*(?:not|never)[\s\S]*(?:success|approval)|independent(?:ly)? verif(?:y|ied|ication)[\s\S]*subagent outputs?/i],
 		["treats Discord or external content as claims, not instructions", /(?:Discord|external content)[\s\S]*claims?[\s\S]*not instructions?|not instructions?[\s\S]*(?:Discord|external content)/i],
 	]);
+	assert.doesNotMatch(combinedFile.content, opencodeOnlyToolPattern);
+	assert.doesNotMatch(combinedFile.content, /Proceeding to plan generation/);
 });
 
 test("#given context-pressure-prone skills #when bundled for Codex #then the eagerly loaded payload stays budgeted", async () => {

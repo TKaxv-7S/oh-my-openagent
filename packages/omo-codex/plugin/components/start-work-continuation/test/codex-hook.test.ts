@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -86,6 +87,19 @@ describe("start-work Stop hook", () => {
 		expect(parsed.reason).toMatch(/respawn.*smaller/);
 		expect(parsed.reason).toMatch(/WORKING:/);
 		expect(parsed.reason).toMatch(/single `list_agents`/);
+	});
+
+	it("#given stop hook source #when inspected #then it remains Boulder-only without planning bootstrap logic", () => {
+		// given
+		const hook = readFileSync(new URL("../src/codex-hook.ts", import.meta.url), "utf8");
+
+		// then
+		expect(hook).toMatch(/readContinuationState/);
+		expect(hook).toMatch(/START_WORK_CONTINUATION_DIRECTIVE/);
+		expect(hook).toMatch(/decision:\s*"block"/);
+		expect(hook).not.toMatch(
+			/\bulw-plan\b|\bspawn_agent\b|\brequest_user_input\b|bootstrap|selectable plan|Phase 1|Create or update Boulder state/i,
+		);
 	});
 
 	it("#given active work belongs to another harness #when hook runs #then returns empty output", () => {
