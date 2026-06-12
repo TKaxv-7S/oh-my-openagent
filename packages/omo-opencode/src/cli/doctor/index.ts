@@ -1,6 +1,6 @@
-import type { DoctorOptions } from "./types"
+import type { DoctorOptions } from "./framework/types"
 import { runDoctor } from "./runner"
-import { EXIT_CODES } from "./constants"
+import { EXIT_CODES } from "./framework/constants"
 
 export async function doctor(options: DoctorOptions = { mode: "default" }): Promise<number> {
   try {
@@ -24,7 +24,7 @@ export function formatDoctorFailure(error: unknown): string[] {
   return lines
 }
 
-export * from "./types"
+export * from "./framework/types"
 export { runDoctor } from "./runner"
-export { resolveDoctorTarget } from "./doctor-target"
-export { formatDoctorOutput, formatJsonOutput } from "./formatter"
+export { resolveDoctorTarget } from "./framework/doctor-target"
+export { formatDoctorOutput, formatJsonOutput } from "./framework/formatter"
